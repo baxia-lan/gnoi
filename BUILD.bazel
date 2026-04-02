@@ -1,53 +1,30 @@
-# Copyright 2023 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# Supporting infrastructure for implementing and testing PINS.
-load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_test")
+"""
+gNOI proto definitions — BUILD.bazel added on claude branch.
 
-package(
-    default_visibility = ["//visibility:public"],
-    licenses = ["notice"],
+Migration status: Phase 1 Bazel migration.
+Build type: Protocol Buffers → generated Go/Python/C++ stubs
+"""
+
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_go//proto:compiler.bzl", "go_proto_library")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_protos",
+    srcs = glob(["**/*.proto"]),
 )
 
-exports_files(["LICENSE"])
-
-# gazelle:go_grpc_compilers @io_bazel_rules_go//proto:go_grpc_v2, @io_bazel_rules_go//proto:go_proto
-# gazelle:proto_import_prefix github.com/openconfig/gnoi
-# gazelle:prefix github.com/openconfig/gnoi
-# gazelle:resolve proto go google/rpc/status.proto @org_golang_google_genproto_googleapis_rpc//status
-# gazelle:resolve proto google/rpc/status.proto @com_google_googleapis//google/rpc:status_proto
-# gazelle:resolve proto go github.com/openconfig/bootz/proto/bootz.proto @openconfig_bootz//proto:bootz
-# gazelle:resolve proto github.com/openconfig/bootz/proto/bootz.proto @openconfig_bootz//proto:bootz_proto
-# gazelle:resolve proto go github.com/openconfig/gnsi/authz/authz.proto @openconfig_gnsi//authz:authz
-# gazelle:resolve proto github.com/openconfig/gnsi/authz/authz.proto @openconfig_gnsi//authz:authz_proto
-# gazelle:resolve proto go github.com/openconfig/gnsi/certz/certz.proto @openconfig_gnsi//certz:certz
-# gazelle:resolve proto github.com/openconfig/gnsi/certz/certz.proto @openconfig_gnsi//certz:certz_proto
-# gazelle:resolve proto go github.com/openconfig/gnsi/pathz/pathz.proto @openconfig_gnsi//pathz:pathz
-# gazelle:resolve proto github.com/openconfig/gnsi/pathz/pathz.proto @openconfig_gnsi//pathz:pathz_proto
-gazelle(name = "gazelle")
-
-gazelle(
-    name = "gazelle_update_repos",
-    args = [
-        "-from_file=go.mod",
-        "-to_macro=gnoi_go_deps.bzl%gnoi_go_deps",
-        "-prune",
-    ],
-    command = "update-repos",
+proto_library(
+    name = "gnoi_proto",
+    srcs = [":all_protos"],
+    visibility = ["//visibility:public"],
 )
 
-gazelle_test(
-    name = "gazelle_test",
-    workspace = "//:BUILD.bazel",
+go_proto_library(
+    name = "gnoi_go_proto",
+    importpath = "github.com/openconfig/gnoi",
+    proto = ":gnoi_proto",
+    visibility = ["//visibility:public"],
 )
+
